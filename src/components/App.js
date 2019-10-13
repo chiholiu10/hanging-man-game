@@ -3,17 +3,19 @@ import axios from 'axios';
 import 'babel-polyfill';
 import { connect } from 'react-redux';
 import { store } from '../index.js';
-import { newArray } from '../actions';
+import { newArray } from '../actions/index';
 // import { isRegExp } from 'util';
 
-const App = () => {
+const App = ({ currentArray }) => {
     const [guessed, setGuessed] = useState([]);
     const [word, setWord] = useState([]);
     const [data, setData] = useState([]);
     const [count, setCount] = useState(0);
     const [arrayCount, setArrayCount] = useState(0);
     // const [newArray, setNewArray] = useState(0);
-    const [wrongLetter, setWrongLetter] = useState(0)
+    const [wrongLetter, setWrongLetter] = useState(0);
+
+    console.log(currentArray);
 
     useEffect(() => {
         const runEffect = async () => {
@@ -91,7 +93,7 @@ const App = () => {
 
     const counter = (letterArray) => {
         let newUpdatedArray = letterArray.filter((v, i) => letterArray.indexOf(v) === i); 
-        store.dispatch(newArray(newUpdatedArray));
+        dispatch(newArray(newUpdatedArray));
         
     }   
 
@@ -143,12 +145,13 @@ const App = () => {
 }
 
 const mapStateToProps = dispatch => ({
-    
+    newArray: newUpdatedArray => dispatch(newArray(newUpdatedArray))
 });
 
 const mapDispatchToProps = state => {
+    console.log('state :' + state.game);
     return {
-
+          currentArray: state.emptyArray || []
     }
 };
 
