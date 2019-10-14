@@ -93,8 +93,7 @@ const App = ({ currentArray }) => {
 
     const counter = (letterArray) => {
         let newUpdatedArray = letterArray.filter((v, i) => letterArray.indexOf(v) === i); 
-        dispatch(newArray(newUpdatedArray));
-        
+        store.dispatch(newArray(newUpdatedArray));
     }   
 
     // const checkMatchLetter = (letter) => {
@@ -144,12 +143,12 @@ const App = ({ currentArray }) => {
     )
 }
 
-const mapStateToProps = dispatch => ({
+const mapDispatchToProps = dispatch => ({
     newArray: newUpdatedArray => dispatch(newArray(newUpdatedArray))
 });
 
-const mapDispatchToProps = state => {
-    console.log('state :' + state.game);
+const mapStateToProps = state => {
+    console.log('state :' + state.game.emptyArray);
     return {
           currentArray: state.emptyArray || []
     }
