@@ -7,15 +7,16 @@ import { newArray } from '../actions/index';
 // import { isRegExp } from 'util';
 
 const App = ({ currentArray }) => {
-    const [guessed, setGuessed] = useState([]);
-    const [word, setWord] = useState([]);
-    const [data, setData] = useState([]);
-    const [count, setCount] = useState(0);
-    const [arrayCount, setArrayCount] = useState(0);
-    // const [newArray, setNewArray] = useState(0);
-    const [wrongLetter, setWrongLetter] = useState(0);
+    const [ guessed, setGuessed ] = useState([]);
+    const [ word, setWord ] = useState([]);
+    const [ data, setData ] = useState([]);
+    const [ count, setCount ] = useState(0);
+    const [ arrayCount, setArrayCount ] = useState(0);
 
-    console.log(currentArray);
+    const [ wrongLetter, setWrongLetter ] = useState(0);
+    const [ updateArray, setUpdateArray ] = useState(false);
+
+    const array = useRef(null);
 
     useEffect(() => {
         const runEffect = async () => {
@@ -53,7 +54,6 @@ const App = ({ currentArray }) => {
     }
 
     useEffect(() => {
-        
         const checkLetter = (event) => {
             let letter = String.fromCharCode(event.keyCode).toLowerCase();
             if(event.keyCode >= 65 && event.keyCode <= 90) {
@@ -75,26 +75,28 @@ const App = ({ currentArray }) => {
         return () => {
             document.removeEventListener('keydown', checkLetter);
         }
-    }, [guessed, count]);
-
-    // const useCompare = (array) => {
-    //     const prevVal = usePrevious(array);
-    //    return prevVal !== array;
-    // }
-    
-    // const usePrevious = (val)=> {
-    //     const ref = useRef();
-    
-    //     useEffect(() => {
-    //         ref.current = val;
-    //     }, console.log(ref.current));
-    //     return () => 
-    // }
+    }, [guessed, count]);       
 
     const counter = (letterArray) => {
         let newUpdatedArray = letterArray.filter((v, i) => letterArray.indexOf(v) === i); 
         store.dispatch(newArray(newUpdatedArray));
+        // checkMatchLetter();
     }   
+
+    // store oldValueArray compare to newValueArray
+    useEffect(() => {
+        const storedArray = currentArray;
+        array.current = storedArray;    
+
+        return () => array.current; 
+        
+    }, [array.current, currentArray]);
+
+    useEffect(() => {
+        setUpdateArray(array.current !== currentArray);
+    }, [array.current, currentArray]);
+
+    // console.log('array.current' + array.current, 'currentArray ' + currentArray);
 
     // const checkMatchLetter = (letter) => {
     //     if(guessed.includes(letter)) {
@@ -148,9 +150,8 @@ const mapDispatchToProps = dispatch => ({
 });
 
 const mapStateToProps = state => {
-    console.log('state :' + state.game.emptyArray);
     return {
-          currentArray: state.emptyArray || []
+        currentArray: state.game.emptyArray 
     }
 };
 
