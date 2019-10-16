@@ -1,16 +1,16 @@
 import { types } from "../actions/index";
 
 const initialState = {
-    emptyArray: []
+    emptyArray: [],
+    filterArray: []
 };
 
 export const game = (state = initialState, action) => {
     switch(action.type) {
         case types.NEW_ARRAY: {
-            console.log(action)
             return {
                 ...state,
-                emptyArray: action.getArray
+                filterArray: action.getFilterArray
             }
         }
         default: 

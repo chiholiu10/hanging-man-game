@@ -3,20 +3,16 @@ import axios from 'axios';
 import 'babel-polyfill';
 import { connect } from 'react-redux';
 import { store } from '../index.js';
-import { newArray } from '../actions/index';
+import { newArray, wrongLetterArray } from '../actions/index';
 // import { isRegExp } from 'util';
 
-const App = ({ currentArray }) => {
+const App = ({ filteredArray }) => {
     const [ guessed, setGuessed ] = useState([]);
-    const [ word, setWord ] = useState([]);
+    const [ word, setWord ] = useState("");
     const [ data, setData ] = useState([]);
     const [ count, setCount ] = useState(0);
     const [ arrayCount, setArrayCount ] = useState(0);
-
-    const [ wrongLetter, setWrongLetter ] = useState(0);
-    const [ updateArray, setUpdateArray ] = useState(false);
-
-    const array = useRef(null);
+    const [ temporaryArray, setTemporaryArray ] = useState([]);
 
     useEffect(() => {
         const runEffect = async () => {
@@ -56,10 +52,11 @@ const App = ({ currentArray }) => {
     useEffect(() => {
         const checkLetter = (event) => {
             let letter = String.fromCharCode(event.keyCode).toLowerCase();
+        
             if(event.keyCode >= 65 && event.keyCode <= 90) {
                 setCount(count + 1);
                 setGuessed(prev => {
-                    const next = [...prev, letter]
+                    const next = [...prev, letter];
                     counter(next);
                     return next;
                 });
@@ -75,60 +72,54 @@ const App = ({ currentArray }) => {
         return () => {
             document.removeEventListener('keydown', checkLetter);
         }
-    }, [guessed, count]);       
+    }, [guessed, count]);    
 
     const counter = (letterArray) => {
-        let newUpdatedArray = letterArray.filter((v, i) => letterArray.indexOf(v) === i); 
-        store.dispatch(newArray(newUpdatedArray));
-        // checkMatchLetter();
-    }   
+
+        // unmatched letters
+        let unmatchedLetters = letterArray.filter(el => word.split('').indexOf(el) === -1);
+        let removeDuplicates = unmatchedLetters.filter((item, index) => unmatchedLetters.indexOf(item) === index);
+
+        // // matched letters
+        let newUpdatedArray = letterArray.filter((v, i) => word.indexOf(v) === i);
+      
+        console.log(newUpdatedArray, removeDuplicates);
+        
+        // store.dispatch(newArray(removeDuplicates));
+    }  
 
     // store oldValueArray compare to newValueArray
-    useEffect(() => {
-        const storedArray = currentArray;
-        array.current = storedArray;    
+    // const usePrevious = (value) => {
+    //     const ref = useRef();
 
-        return () => array.current; 
-        
-    }, [array.current, currentArray]);
+    //     useEffect(() => {
+    //         ref.current = value;
+    //     }, [value]);
 
-    useEffect(() => {
-        setUpdateArray(array.current !== currentArray);
-    }, [array.current, currentArray]);
-
-    // console.log('array.current' + array.current, 'currentArray ' + currentArray);
-
-    // const checkMatchLetter = (letter) => {
-    //     if(guessed.includes(letter)) {
-    //         wrongLetter();
-    //         return;
-    //     }
-        
-    //     setGuessed(prev => [...prev, letter]);
+    //     return ref.current;
     // }
 
-    // const wrongLetter = () => {
-    //     setCounterClicks(counterClicks + 1);
-    //     if(counterClicks == 4) {
-    //         console.log('game over');
-    //     }
-    // }
+    // const prevArray = usePrevious(filteredArray);
+    // console.log('prevArray ' + prevArray);
+
+    // check if array has been updated
+    // const arrayChanged = filteredArray!== prevArray;
 
     const revealMatchedWord = (string, guessed = []) => {
         if(string.length > 0) {
             const regExpr = new RegExp(`[^${guessed.join("")}\\s]`, 'ig');
-            return string.replace(regExpr, '_');
+            return string.replace(regExpr, '_');    
         }
     }
 
     const curr = revealMatchedWord(word, guessed);
-    const isGuessed = curr === word; // check if word is guessed. 
+    const isGuessed = curr === word; // check if word is guessed.
                                                
     const cleanWord = () => {
         if(isGuessed) {
             setGuessed([]);
         }
-        setWrongLetter(0)
+        // setWrongLetter(0);
     }
 
     const checkScore = () => {
@@ -146,12 +137,12 @@ const App = ({ currentArray }) => {
 }
 
 const mapDispatchToProps = dispatch => ({
-    newArray: newUpdatedArray => dispatch(newArray(newUpdatedArray))
+    newArray: (removeDuplicates) => dispatch(newArray(removeDuplicates)),
 });
 
 const mapStateToProps = state => {
     return {
-        currentArray: state.game.emptyArray 
+        filteredArray: state.game.filterArray
     }
 };
 
