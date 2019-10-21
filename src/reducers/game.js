@@ -29,7 +29,7 @@ export const game = (state = initialState, action) => {
             console.log('FILTEREDARRAY ' + state.currentArray + 'word ' + state.currentWord);
             return {
                 ...state,
-                filteredArray: allLetters.filter(el => randomWord.indexOf(el) === -1)
+                filteredArray: Array.from(new Set(allLetters.filter(el => state.currentWord.indexOf(el) === -1)))
             }
         }
 

@@ -47,20 +47,17 @@ const App = ({ updatedArray, unMatchedLetters, guessWord }) => {
         store.dispatch(getString(currentString));
     }
 
-
-
     useEffect(() => {
-
         const checkLetter = (event) => {
             let letter = String.fromCharCode(event.keyCode).toLowerCase();
         
             if(event.keyCode >= 65 && event.keyCode <= 90) {
                 store.dispatch(newArray(letter));
-               
                 store.dispatch(filteredArray(guessWord));
+                checkAttempts();
             }
     
-            if(event.keyCode === 13) {
+            if(event.keyCode === 13 || isGuessed) {
                 clearWord();
                 checkScore();
             }
@@ -98,7 +95,14 @@ const App = ({ updatedArray, unMatchedLetters, guessWord }) => {
 
     const curr = revealMatchedWord(guessWord, updatedArray);
     const isGuessed = curr === guessWord; // check if word is guessed.
-                                               
+
+    const checkAttempts = () => {
+        console.log('checkAttempts ' + isGuessed);
+    }
+
+    // check if word is guessed 
+    // wrong attempt counter
+                                     
     const clearWord = () => {
         // if(isGuessed) {
             // store.dispatch(clearArray())
