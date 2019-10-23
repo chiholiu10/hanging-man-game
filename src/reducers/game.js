@@ -3,7 +3,8 @@ import { types } from "../actions/index";
 const initialState = {
     currentArray: [],
     currentword: [],
-    filteredArray: []
+    filteredArray: [],
+    updatedCurrentScore: 0
 };
 
 export const game = (state = initialState, action) => {
@@ -37,6 +38,14 @@ export const game = (state = initialState, action) => {
             return {
                 ...state,
                 currentArray: []
+            }
+        }
+
+        case types.SCORE_COUNTER: {
+            console.log(action.getScore);
+            return {
+                ...state,
+                updatedCurrentScore: state.updatedCurrentScore + action.getScore
             }
         }
 

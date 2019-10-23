@@ -2,14 +2,12 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
 import { store } from '../index.js';
-import { newArray, filteredArray, clearArray, getString } from '../actions/index';
+import { newArray, filteredArray, clearArray, getString, scoreCounter } from '../actions/index';
 
-const App = ({ updatedArray, unMatchedLetters, unMatchedLettersLength, guessWord }) => {
+const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore }) => {
     const [ data, setData ] = useState([]);
-    const [ count, setCount ] = useState(0);
+    const [ score, setScore ] = useState(0);
     const [ arrayCount, setArrayCount ] = useState(0);
-
-    console.log(guessWord);
 
     useEffect(() => {
         const runEffect = async () => {
@@ -24,12 +22,10 @@ const App = ({ updatedArray, unMatchedLetters, unMatchedLettersLength, guessWord
         if((arrayCount >= data.length - 1)) {
             setArrayCount(0);
             shuffle(data);
-            console.log('data ' + data);
         }
 
         replaceLetter(data[arrayCount].word);
         clearWord();
-        console.log('random Function');
     }
 
     const shuffle = (a) => {
@@ -104,29 +100,41 @@ const App = ({ updatedArray, unMatchedLetters, unMatchedLettersLength, guessWord
         store.dispatch(clearArray());
     }
 
-    const checkScore = () => {
-        // let newScore = Math.round(((1000 / (count / curr.length)) * 20) / 100);
-        setCount(0);
+    const checkScore = (count) => {
+        let newScore = Math.round(((1000 / (count)) * 20) / 100);
+        store.dispatch(scoreCounter(newScore));
+        if(count === 100) {
+            console.log('Game Over');
+        }
+
+        // setScore(newScore + score);
     }
 
     const checkResult = () => {
-        if(unMatchedLettersLength > 4 || isGuessed) {
-            delay();
-        } 
+        unMatchedLettersLength = unMatchedLettersLength < 1 ? 1 : unMatchedLettersLength;
+
+        if(isGuessed) {
+            delay(unMatchedLettersLength);
+            if(unMatchedLettersLength > 5) {
+                delay(100);
+            }
+        }
     }
 
-    const delay = () => {
+    const delay = (attempts) => {
         setTimeout(() => {
-            console.log('This will run when player guessed the word');
             randomWord();
-        }, 2000);
-    };
+            checkScore(attempts);
+        }, 800);
+    }
+
     clearInterval(delay);
 
     useMemo(checkResult, [unMatchedLettersLength, isGuessed])
   
     return (
         <div>
+            <p>Your Score: {newCurrentScore}</p>
             <p>{guessWord}</p>
             <p>{revealMatchedWord(guessWord, updatedArray)}</p>
             <button onClick={randomWord}></button>
@@ -142,12 +150,11 @@ const mapDispatchToProps = dispatch => ({
 });
 
 const mapStateToProps = state => {
-    console.log('state.game.currentWord ' + state.game.currentWord);
     return {
         updatedArray: state.game.currentArray || [],
-        unMatchedLetters: state.game.filteredArray || [],
         unMatchedLettersLength: state.game.filteredArrayLength || 0,
-        guessWord: state.game.currentWord || []
+        guessWord: state.game.currentWord || [],
+        newCurrentScore: state.game.updatedCurrentScore || 0
     }
 };
 

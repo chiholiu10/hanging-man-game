@@ -2,7 +2,8 @@ export const types = {
     NEW_ARRAY: 'NEW_ARRAY',
     FILTERED_ARRAY: 'FILTERED_ARRAY',
     GET_WORD: 'GET_WORD',
-    CLEAR_ARRAY: 'CLEAR_ARRAY'
+    CLEAR_ARRAY: 'CLEAR_ARRAY',
+    SCORE_COUNTER: 'SCORE_COUNTER'
 }
 
 export const newArray = unfilteredArray => ({
@@ -22,5 +23,10 @@ export const getString = word => ({
 
 export const clearArray = () => ({
     type: types.CLEAR_ARRAY
+});
+
+export const scoreCounter = getScore => ({
+    type: types.SCORE_COUNTER,
+    getScore
 });
 
