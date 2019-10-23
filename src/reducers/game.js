@@ -26,10 +26,11 @@ export const game = (state = initialState, action) => {
         case types.FILTERED_ARRAY: {
             const allLetters = state.currentArray;
             const randomWord = state.currentWord;
-            console.log('FILTEREDARRAY ' + state.currentArray + 'word ' + state.currentWord);
+            // console.log('FILTEREDARRAY ' + state.currentArray + 'word ' + state.currentWord);
             return {
                 ...state,
-                filteredArray: allLetters.filter(el => randomWord.indexOf(el) === -1)
+                filteredArray: Array.from(new Set(allLetters.filter(el => randomWord.indexOf(el) === -1))),
+                filteredArrayLength: state.filteredArray.length
             }
         }
 
