@@ -3,10 +3,11 @@ import axios from 'axios';
 import { connect } from 'react-redux';
 import { store } from '../index.js';
 import { newArray, filteredArray, clearArray, getString, scoreCounter } from '../actions/index';
+import { restElement } from '@babel/types';
 
 const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore }) => {
     const [ data, setData ] = useState([]);
-    const [ score, setScore ] = useState(0);
+    const [ attempts, setAttempts ] = useState(0);
     const [ arrayCount, setArrayCount ] = useState(0);
 
     useEffect(() => {
@@ -19,24 +20,27 @@ const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore
 
     const randomWord = () => {
         setArrayCount(arrayCount + 1);
+        setAttempts(unMatchedLettersLength);
+
         if((arrayCount >= data.length - 1)) {
             setArrayCount(0);
             shuffle(data);
         }
-
+        
         replaceLetter(data[arrayCount].word);
         clearWord();
     }
 
     const shuffle = (a) => {
         // create copy or new array
-        
+
         let newArr = [...a];
         for (let i = a.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
             return;
         }
+
         setData(newArr);
     }
 
@@ -48,7 +52,7 @@ const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore
     useEffect(() => {
         const checkLetter = (event) => {
             let letter = String.fromCharCode(event.keyCode).toLowerCase();
-        
+            console.log(unMatchedLettersLength);
             if(event.keyCode >= 65 && event.keyCode <= 90) {
                 store.dispatch(newArray(letter));
                 store.dispatch(filteredArray(guessWord));
@@ -68,20 +72,20 @@ const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore
     }, []); 
 
     // store oldValueArray compare to newValueArray
-    const usePrevious = (value) => {
-        const ref = useRef();
+    // const usePrevious = (value) => {
+    //     const ref = useRef();
 
-        useEffect(() => {
-            ref.current = value;
-        }, [value]);
+    //     useEffect(() => {
+    //         ref.current = value;
+    //     }, [value]);
 
-        return ref.current;
-    }
+    //     return ref.current;
+    // }
 
-    const prevArray = usePrevious(filteredArray);
+    // const prevArray = usePrevious(filteredArray);
 
-    // check if array has been updated
-    const arrayChanged = filteredArray!== prevArray;
+    // // check if array has been updated
+    // const arrayChanged = filteredArray!== prevArray;
 
     const revealMatchedWord = (string, guessed) => {
         if(string.length > 0) {
@@ -101,23 +105,23 @@ const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore
     }
 
     const checkScore = (count) => {
-        let newScore = Math.round(((1000 / (count)) * 20) / 100);
-        store.dispatch(scoreCounter(newScore));
-        if(count === 100) {
-            console.log('Game Over');
-        }
+        let newScore = Math.round(((1000 / (count)) * 1.3) + 100);
+       
 
-        // setScore(newScore + score);
+        if(count == -10) {
+            reset();
+        } else {
+            store.dispatch(scoreCounter(newScore));
+        }
     }
 
     const checkResult = () => {
         unMatchedLettersLength = unMatchedLettersLength < 1 ? 1 : unMatchedLettersLength;
-
-        if(isGuessed) {
+        console.log(unMatchedLettersLength);
+        if(unMatchedLettersLength > 4) {
+            delay(-10);
+        } else if (isGuessed) {
             delay(unMatchedLettersLength);
-            if(unMatchedLettersLength > 5) {
-                delay(100);
-            }
         }
     }
 
@@ -130,7 +134,7 @@ const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore
 
     clearInterval(delay);
 
-    useMemo(checkResult, [unMatchedLettersLength, isGuessed])
+    useMemo(checkResult, [unMatchedLettersLength, isGuessed]);
   
     return (
         <div>
