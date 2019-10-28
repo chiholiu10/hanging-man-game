@@ -4,7 +4,18 @@ import { connect } from 'react-redux';
 import { store } from '../index.js';
 import { newArray, filteredArray, clearArray, getString, scoreCounter } from '../actions/index';
 
-const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore }) => {
+const App = ({ 
+    newArray,
+    filteredArray,
+    getString,
+    clearArray,
+    scoreCounter,
+    updatedArray, 
+    unMatchedLettersLength, 
+    guessWord,  
+    newCurrentScore 
+}) => {
+
     const [ data, setData ] = useState([]);
     const [ arrayCount, setArrayCount ] = useState(0);
 
@@ -23,12 +34,10 @@ const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore
             shuffle(data);
         }
 
-        console.log(unMatchedLettersLength);
+        console.log('random function ' + unMatchedLettersLength);
         replaceLetter(data[arrayCount].word);
         clearWord();
     }
-
-
 
     const shuffle = (a) => {
         // create copy or new array
@@ -45,7 +54,7 @@ const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore
 
     const replaceLetter = (string) => {
         let currentString = string;
-        store.dispatch(getString(currentString));
+        getString(currentString);
     }
 
     const handleKeyPress = useCallback(event => {
@@ -53,8 +62,8 @@ const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore
         if(event.keyCode >= 65 && event.keyCode <= 90) {
             console.log('unMatchedLettersLength ' + unMatchedLettersLength);
 
-            store.dispatch(newArray(letter));
-            store.dispatch(filteredArray(guessWord));
+            newArray(letter);
+            filteredArray(guessWord);
         }
     });
 
@@ -81,7 +90,7 @@ const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore
     // wrong attempt counter
                              
     const clearWord = () => {
-        store.dispatch(clearArray());
+        clearArray();
     }
 
     const checkScore = (count) => {
@@ -90,13 +99,12 @@ const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore
         if(count == -10) {
             
         } else {
-            store.dispatch(scoreCounter(newScore));
+            scoreCounter(newScore);
         }
     }
 
     const checkResult = () => {
         unMatchedLettersLength = unMatchedLettersLength < 1 ? 1 : unMatchedLettersLength;
-        // console.log('unMatchedLettersLength ' + unMatchedLettersLength);
         
         if(unMatchedLettersLength > 4) {
             delay(-10);
@@ -134,7 +142,8 @@ const mapDispatchToProps = dispatch => ({
     newArray: (currentArray) => dispatch(newArray(currentArray)),
     filteredArray: (getWord) => dispatch(filteredArray(getWord)),
     getString: (word) => dispatch(getString(word)), 
-    cleanArray: () => dispatch(cleanArray())
+    clearArray: () => dispatch(clearArray()),
+    scoreCounter: () => dispatch(scoreCounter())
 });
 
 const mapStateToProps = state => {
