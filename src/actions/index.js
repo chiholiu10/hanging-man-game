@@ -29,4 +29,3 @@ export const scoreCounter = getScore => ({
     type: types.SCORE_COUNTER,
     getScore
 });
-

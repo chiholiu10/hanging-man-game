@@ -3,11 +3,9 @@ import axios from 'axios';
 import { connect } from 'react-redux';
 import { store } from '../index.js';
 import { newArray, filteredArray, clearArray, getString, scoreCounter } from '../actions/index';
-import { restElement } from '@babel/types';
 
 const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore }) => {
     const [ data, setData ] = useState([]);
-    const [ attempts, setAttempts ] = useState(0);
     const [ arrayCount, setArrayCount ] = useState(0);
 
     useEffect(() => {
@@ -17,19 +15,20 @@ const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore
         }
         runEffect();
     }, []);
-
+    
     const randomWord = () => {
         setArrayCount(arrayCount + 1);
-        setAttempts(unMatchedLettersLength);
-
         if((arrayCount >= data.length - 1)) {
             setArrayCount(0);
             shuffle(data);
         }
-        
+
+        console.log(unMatchedLettersLength);
         replaceLetter(data[arrayCount].word);
         clearWord();
     }
+
+
 
     const shuffle = (a) => {
         // create copy or new array
@@ -49,18 +48,15 @@ const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore
         store.dispatch(getString(currentString));
     }
 
-    useEffect(() => {
+    useEffect(() => {    
+        console.log('unMatchedLettersLength ' + unMatchedLettersLength);
         const checkLetter = (event) => {
             let letter = String.fromCharCode(event.keyCode).toLowerCase();
-            console.log(unMatchedLettersLength);
+    
             if(event.keyCode >= 65 && event.keyCode <= 90) {
+            
                 store.dispatch(newArray(letter));
                 store.dispatch(filteredArray(guessWord));
-            }
-    
-            if(event.keyCode === 13) {
-                // clearWord();
-                // checkScore();
             }
         }
     
@@ -69,23 +65,7 @@ const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore
         return () => {
             document.removeEventListener('keydown', checkLetter);
         }
-    }, []); 
-
-    // store oldValueArray compare to newValueArray
-    // const usePrevious = (value) => {
-    //     const ref = useRef();
-
-    //     useEffect(() => {
-    //         ref.current = value;
-    //     }, [value]);
-
-    //     return ref.current;
-    // }
-
-    // const prevArray = usePrevious(filteredArray);
-
-    // // check if array has been updated
-    // const arrayChanged = filteredArray!== prevArray;
+    }, [unMatchedLettersLength]); 
 
     const revealMatchedWord = (string, guessed) => {
         if(string.length > 0) {
@@ -107,9 +87,8 @@ const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore
     const checkScore = (count) => {
         let newScore = Math.round(((1000 / (count)) * 1.3) + 100);
        
-
         if(count == -10) {
-            reset();
+            
         } else {
             store.dispatch(scoreCounter(newScore));
         }
@@ -117,13 +96,18 @@ const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore
 
     const checkResult = () => {
         unMatchedLettersLength = unMatchedLettersLength < 1 ? 1 : unMatchedLettersLength;
-        console.log(unMatchedLettersLength);
+        // console.log('unMatchedLettersLength ' + unMatchedLettersLength);
+        
         if(unMatchedLettersLength > 4) {
             delay(-10);
         } else if (isGuessed) {
             delay(unMatchedLettersLength);
         }
     }
+
+    // GET_WORD getString
+    // CLEAR_ARRAY clearArray
+    // SCORE_COUNTER scoreCounter
 
     const delay = (attempts) => {
         setTimeout(() => {
@@ -156,7 +140,7 @@ const mapDispatchToProps = dispatch => ({
 const mapStateToProps = state => {
     return {
         updatedArray: state.game.currentArray || [],
-        unMatchedLettersLength: state.game.filteredArrayLength || 0,
+        unMatchedLettersLength: state.game.filteredArray.length,
         guessWord: state.game.currentWord || [],
         newCurrentScore: state.game.updatedCurrentScore || 0
     }
