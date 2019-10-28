@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
 import { store } from '../index.js';
@@ -48,24 +48,24 @@ const App = ({ updatedArray, unMatchedLettersLength, guessWord,  newCurrentScore
         store.dispatch(getString(currentString));
     }
 
-    useEffect(() => {    
-        console.log('unMatchedLettersLength ' + unMatchedLettersLength);
-        const checkLetter = (event) => {
-            let letter = String.fromCharCode(event.keyCode).toLowerCase();
-    
-            if(event.keyCode >= 65 && event.keyCode <= 90) {
-            
-                store.dispatch(newArray(letter));
-                store.dispatch(filteredArray(guessWord));
-            }
+    const handleKeyPress = useCallback(event => {
+        let letter = String.fromCharCode(event.keyCode).toLowerCase();
+        if(event.keyCode >= 65 && event.keyCode <= 90) {
+            console.log('unMatchedLettersLength ' + unMatchedLettersLength);
+
+            store.dispatch(newArray(letter));
+            store.dispatch(filteredArray(guessWord));
         }
-    
-        document.addEventListener('keydown', checkLetter);
+    });
+
+    useEffect(() => {
+        document.addEventListener('keydown', handleKeyPress);
 
         return () => {
-            document.removeEventListener('keydown', checkLetter);
+            document.removeEventListener('keydown', handleKeyPress);
         }
-    }, [unMatchedLettersLength]); 
+    }, [handleKeyPress]);
+
 
     const revealMatchedWord = (string, guessed) => {
         if(string.length > 0) {
