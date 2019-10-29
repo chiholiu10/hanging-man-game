@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
-import { store } from '../index.js';
 import { newArray, filteredArray, clearArray, getString, scoreCounter } from '../actions/index';
 
 const App = ({ 
@@ -17,6 +16,7 @@ const App = ({
 }) => {
 
     const [ data, setData ] = useState([]);
+    const [ attempts, setAttempts ] = useState(false);
     const [ arrayCount, setArrayCount ] = useState(0);
 
     useEffect(() => {
@@ -32,11 +32,9 @@ const App = ({
         if((arrayCount >= data.length - 1)) {
             setArrayCount(0);
             shuffle(data);
-        }
-
-        console.log('random function ' + unMatchedLettersLength);
+        } 
         replaceLetter(data[arrayCount].word);
-        clearWord();
+        resetGame();
     }
 
     const shuffle = (a) => {
@@ -59,11 +57,11 @@ const App = ({
 
     const handleKeyPress = useCallback(event => {
         let letter = String.fromCharCode(event.keyCode).toLowerCase();
-        if(event.keyCode >= 65 && event.keyCode <= 90) {
-            console.log('unMatchedLettersLength ' + unMatchedLettersLength);
-
+        if(event.keyCode >= 65 && event.keyCode <= 90 && (unMatchedLettersLength < 4)) {
             newArray(letter);
             filteredArray(guessWord);
+        } else {
+            resetGame();
         }
     });
 
@@ -75,12 +73,11 @@ const App = ({
         }
     }, [handleKeyPress]);
 
-
     const revealMatchedWord = (string, guessed) => {
         if(string.length > 0) {
             const regExpr = new RegExp(`[^${guessed.join("")}\\s]`, 'ig');
             return string.replace(regExpr, '_');    
-        }
+        } 
     }
 
     const curr = revealMatchedWord(guessWord, updatedArray);
@@ -88,16 +85,11 @@ const App = ({
     
     // check if word is guessed
     // wrong attempt counter
-                             
-    const clearWord = () => {
-        clearArray();
-    }
 
     const checkScore = (count) => {
         let newScore = Math.round(((1000 / (count)) * 1.3) + 100);
-       
         if(count == -10) {
-            
+            console.log('Game Over');
         } else {
             scoreCounter(newScore);
         }
@@ -111,6 +103,10 @@ const App = ({
         } else if (isGuessed) {
             delay(unMatchedLettersLength);
         }
+    }
+
+    const resetGame = () => {
+        clearArray();
     }
 
     // GET_WORD getString
@@ -143,7 +139,7 @@ const mapDispatchToProps = dispatch => ({
     filteredArray: (getWord) => dispatch(filteredArray(getWord)),
     getString: (word) => dispatch(getString(word)), 
     clearArray: () => dispatch(clearArray()),
-    scoreCounter: () => dispatch(scoreCounter())
+    scoreCounter: (getScore) => dispatch(scoreCounter(getScore))
 });
 
 const mapStateToProps = state => {

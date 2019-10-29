@@ -4,6 +4,7 @@ const initialState = {
     currentArray: [],
     currentword: [],
     filteredArray: [],
+    filteredArrayLength: 0,
     updatedCurrentScore: 0
 };
 
@@ -12,7 +13,8 @@ export const game = (state = initialState, action) => {
         case types.NEW_ARRAY: {
             return {
                 ...state,
-                currentArray: [...state.currentArray, action.unfilteredArray]            
+                currentArray: [...state.currentArray, action.unfilteredArray],
+                filteredArray: []            
             }
         }
 
@@ -36,14 +38,13 @@ export const game = (state = initialState, action) => {
             } else {
                 return state
             }
-
-            
         }
 
         case types.CLEAR_ARRAY: {
             return {
                 ...state,
-                currentArray: []
+                currentArray: [],
+                filteredArray: []
             }
         }
 
