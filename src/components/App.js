@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
-import { newArray, filteredArray, clearArray, getString, scoreCounter } from '../actions/index';
+import { newArray, filteredArray, clearArray, getString, scoreCounter, highScore } from '../actions/index';
 
 const App = ({ 
     newArray,
     filteredArray,
     getString,
     clearArray,
+    highScore,
+    allHighScores,
+    sortedHighScores,
     scoreCounter,
     updatedArray, 
     unMatchedLettersLength, 
@@ -16,8 +19,8 @@ const App = ({
 }) => {
 
     const [ data, setData ] = useState([]);
-    const [ attempts, setAttempts ] = useState(false);
     const [ arrayCount, setArrayCount ] = useState(0);
+    const [ highScores, setHighScores] = useState([]);
 
     useEffect(() => {
         const runEffect = async () => {
@@ -25,16 +28,27 @@ const App = ({
             setData(result.data);
         }
         runEffect();
-    }, []);
+    }, [setData]);
     
     const randomWord = () => {
-        setArrayCount(arrayCount + 1);
-        if((arrayCount >= data.length - 1)) {
-            setArrayCount(0);
+        if(arrayCount >= 5) {
+            setArrayCount(0); 
+            restartGame();
+            storeScore();
+        } else {
+            setArrayCount(arrayCount + 1);
+            replaceLetter(data[arrayCount].word);
+            clearArray();
             shuffle(data);
-        } 
-        replaceLetter(data[arrayCount].word);
-        resetGame();
+        }
+    }
+
+    const restartGame = () => {
+        
+    }
+
+    const storeScore = () => {
+        highScore(newCurrentScore);
     }
 
     const shuffle = (a) => {
@@ -57,11 +71,14 @@ const App = ({
 
     const handleKeyPress = useCallback(event => {
         let letter = String.fromCharCode(event.keyCode).toLowerCase();
-        if(event.keyCode >= 65 && event.keyCode <= 90 && (unMatchedLettersLength < 4)) {
+
+        if(event.keyCode >= 65 && event.keyCode <= 90) {
             newArray(letter);
             filteredArray(guessWord);
+        } else if(event.keyCode == 13) {
+            randomWord();
         } else {
-            resetGame();
+            return;
         }
     });
 
@@ -77,7 +94,9 @@ const App = ({
         if(string.length > 0) {
             const regExpr = new RegExp(`[^${guessed.join("")}\\s]`, 'ig');
             return string.replace(regExpr, '_');    
-        } 
+        } else {
+            return;
+        }
     }
 
     const curr = revealMatchedWord(guessWord, updatedArray);
@@ -89,7 +108,7 @@ const App = ({
     const checkScore = (count) => {
         let newScore = Math.round(((1000 / (count)) * 1.3) + 100);
         if(count == -10) {
-            console.log('Game Over');
+            restartGame();
         } else {
             scoreCounter(newScore);
         }
@@ -105,10 +124,6 @@ const App = ({
         }
     }
 
-    const resetGame = () => {
-        clearArray();
-    }
-
     // GET_WORD getString
     // CLEAR_ARRAY clearArray
     // SCORE_COUNTER scoreCounter
@@ -118,18 +133,28 @@ const App = ({
             randomWord();
             checkScore(attempts);
         }, 800);
-    }
+    }   
 
     clearInterval(delay);
 
     useMemo(checkResult, [unMatchedLettersLength, isGuessed]);
-  
+   
+    const listItems = allHighScores.map((allHighScores, key) => 
+        <li key={key}>{allHighScores}</li>
+    );
+
     return (
         <div>
+            <p>{highScores}</p>
             <p>Your Score: {newCurrentScore}</p>
+    
             <p>{guessWord}</p>
             <p>{revealMatchedWord(guessWord, updatedArray)}</p>
             <button onClick={randomWord}></button>
+
+            <div>High Scores below: 
+                <ol>{listItems}</ol>
+            </div>
         </div>
     )
 }
@@ -139,7 +164,8 @@ const mapDispatchToProps = dispatch => ({
     filteredArray: (getWord) => dispatch(filteredArray(getWord)),
     getString: (word) => dispatch(getString(word)), 
     clearArray: () => dispatch(clearArray()),
-    scoreCounter: (getScore) => dispatch(scoreCounter(getScore))
+    scoreCounter: (getScore) => dispatch(scoreCounter(getScore)),
+    highScore: (getHighScore) => dispatch(highScore(getHighScore))
 });
 
 const mapStateToProps = state => {
@@ -147,7 +173,8 @@ const mapStateToProps = state => {
         updatedArray: state.game.currentArray || [],
         unMatchedLettersLength: state.game.filteredArray.length,
         guessWord: state.game.currentWord || [],
-        newCurrentScore: state.game.updatedCurrentScore || 0
+        newCurrentScore: state.game.updatedCurrentScore || 0,
+        allHighScores: state.game.unsortedAllHighScores || []
     }
 };
 

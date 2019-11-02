@@ -5,7 +5,10 @@ const initialState = {
     currentword: [],
     filteredArray: [],
     filteredArrayLength: 0,
-    updatedCurrentScore: 0
+    updatedCurrentScore: 0,
+    sortedAllHighScores: [],
+    unsortedAllHighScores: [],
+    clonedAllHighScores: []
 };
 
 export const game = (state = initialState, action) => {
@@ -44,7 +47,8 @@ export const game = (state = initialState, action) => {
             return {
                 ...state,
                 currentArray: [],
-                filteredArray: []
+                filteredArray: [],
+                updatedCurrentScore: Math.floor(state.updatedCurrentScore / 5)
             }
         }
 
@@ -55,6 +59,12 @@ export const game = (state = initialState, action) => {
             }
         }
 
+        case types.HIGH_SCORE: {
+            return {
+                ...state,
+                unsortedAllHighScores: [...state.unsortedAllHighScores, state.updatedCurrentScore]
+            }
+        }
         default: 
             return state;
     }
