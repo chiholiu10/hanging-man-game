@@ -10,7 +10,7 @@ const App = ({
     clearArray,
     highScore,
     allHighScores,
-    sortedHighScores,
+    newUpdatedHighScores,
     scoreCounter,
     updatedArray, 
     unMatchedLettersLength, 
@@ -147,7 +147,7 @@ const App = ({
 
     useMemo(checkResult, [unMatchedLettersLength, isGuessed]);
    
-    const listItems = allHighScores.map((allHighScores, key) => 
+    const highScoreList = allHighScores.map((allHighScores, key) => 
         <li key={key}>{allHighScores}</li>
     );
 
@@ -161,7 +161,7 @@ const App = ({
             <button onClick={randomWord}></button>
 
             <div>High Scores below: 
-                <ol>{listItems}</ol>
+                <ol>{highScoreList}</ol>
             </div>
         </div>
     )
@@ -177,13 +177,17 @@ const mapDispatchToProps = dispatch => ({
 });
 
 const mapStateToProps = state => {
+    console.log(state.game.sortedAllHighScores);
+    console.log(state.game);
     return {
         updatedArray: state.game.currentArray || [],
         unMatchedLettersLength: state.game.filteredArray.length,
         guessWord: state.game.currentWord || [],
         newCurrentScore: state.game.updatedCurrentScore || 0,
-        allHighScores: state.game.unsortedAllHighScores || []
+        allHighScores: state.game.sortedAllHighScores || []
     }
-};
+}
+
+// stop game when hits 5 times wrong letter!
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

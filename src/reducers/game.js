@@ -7,8 +7,7 @@ const initialState = {
     filteredArrayLength: 0,
     updatedCurrentScore: 0,
     sortedAllHighScores: [],
-    unsortedAllHighScores: [],
-    clonedAllHighScores: []
+    unsortedAllHighScores: []
 };
 
 export const game = (state = initialState, action) => {
@@ -60,9 +59,13 @@ export const game = (state = initialState, action) => {
         }
 
         case types.HIGH_SCORE: {
+            const unsortedHighScores = [...state.unsortedAllHighScores, state.updatedCurrentScore];
             return {
                 ...state,
-                unsortedAllHighScores: [...state.unsortedAllHighScores, state.updatedCurrentScore]
+                unsortedAllHighScores: unsortedHighScores,
+                sortedAllHighScores: [].concat(unsortedHighScores).sort((a, b) => {
+                    return b - a;
+               })
             }
         }
         default: 
