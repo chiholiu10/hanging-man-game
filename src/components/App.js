@@ -1,23 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
-import { store } from '../index.js';
-import { newArray, filteredArray, clearArray, getString } from '../actions/index';
+import { newArray, filteredArray, clearArray, getString, scoreCounter, highScore } from '../actions/index';
 
-const App = ({ updatedArray, unMatchedLetters, guessWord, wrongAttempts }) => {
+const App = ({ 
+    newArray,
+    filteredArray,
+    getString,
+    clearArray,
+    highScore,
+    allHighScores,
+    sortedHighScores,
+    scoreCounter,
+    updatedArray, 
+    unMatchedLettersLength, 
+    guessWord,  
+    newCurrentScore 
+}) => {
+
     const [ data, setData ] = useState([]);
-    const [ attempts, setAttempts ] = useState(0);
-    // const [ count, setCount ] = useState(0);
     const [ arrayCount, setArrayCount ] = useState(0);
-
-    console.log('wrongAttempts ' + wrongAttempts);
-
-    useEffect(() => {
-        
-        return () => {
-            console.log(wrongAttempts);
-        }
-    }, []);
+    const [ highScores, setHighScores] = useState([]);
 
     useEffect(() => {
         const runEffect = async () => {
@@ -25,80 +28,75 @@ const App = ({ updatedArray, unMatchedLetters, guessWord, wrongAttempts }) => {
             setData(result.data);
         }
         runEffect();
-    }, []);
-
-    const randomWord = () => {
-        setArrayCount(arrayCount + 1);
-        if((arrayCount >= data.length - 1)) {
-            setArrayCount(0);
-            shuffle(data);
-        } 
+    }, [setData]);
     
-        replaceLetter(data[arrayCount].word);
-        clearWord();
+    const randomWord = () => {
+        if(arrayCount >= 5) {
+            setArrayCount(0); 
+            restartGame();
+            storeScore();
+        } else {
+            setArrayCount(arrayCount + 1);
+            replaceLetter(data[arrayCount].word);
+            clearArray();
+            shuffle(data);
+        }
+    }
+
+    const restartGame = () => {
+        
+    }
+
+    const storeScore = () => {
+        highScore(newCurrentScore);
     }
 
     const shuffle = (a) => {
         // create copy or new array
-        
+
         let newArr = [...a];
         for (let i = a.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
             return;
         }
+
         setData(newArr);
     }
 
     const replaceLetter = (string) => {
         let currentString = string;
-        store.dispatch(getString(currentString));
+        getString(currentString);
     }
+
+    const handleKeyPress = useCallback(event => {
+        let letter = String.fromCharCode(event.keyCode).toLowerCase();
+
+        if(event.keyCode >= 65 && event.keyCode <= 90) {
+            newArray(letter);
+            filteredArray(guessWord);
+        } else if(event.keyCode == 13) {
+            randomWord();
+        } else {
+            return;
+        }
+    });
 
     useEffect(() => {
-
-        const checkLetter = (event) => {
-            let letter = String.fromCharCode(event.keyCode).toLowerCase();
-        
-            if(event.keyCode >= 65 && event.keyCode <= 90) {
-                store.dispatch(newArray(letter));
-                store.dispatch(filteredArray(guessWord));
-            }
-     
-            if(event.keyCode === 13) {
-                clearWord();
-                checkScore();
-            }
-        }
-    
-        document.addEventListener('keydown', checkLetter);
+        document.addEventListener('keydown', handleKeyPress);
 
         return () => {
-            document.removeEventListener('keydown', checkLetter);
+            document.removeEventListener('keydown', handleKeyPress);
         }
-    }, []); 
-
-    // store oldValueArray compare to newValueArray
-    const usePrevious = (value) => {
-        const ref = useRef();
-
-        useEffect(() => {
-            ref.current = value;
-        }, [value]);
-
-        return ref.current;
-    }
-
-    const prevArray = usePrevious(filteredArray);
-
-    // check if array has been updated
-    const arrayChanged = filteredArray!== prevArray;
+    }, [handleKeyPress]);
 
     const revealMatchedWord = (string, guessed) => {
 
         if(string.length > 0) {
             const regExpr = new RegExp(`[^${guessed.join("")}\\s]`, 'ig');
             return string.replace(regExpr, '_');    
+        } else {
+            return;
         }
 
         if(wrongAttempts) {
@@ -110,26 +108,61 @@ const App = ({ updatedArray, unMatchedLetters, guessWord, wrongAttempts }) => {
 
 
     const curr = revealMatchedWord(guessWord, updatedArray);
-    const isGuessed = curr === guessWord; // check if word is guessed.
-                                               
-    const clearWord = () => {
-        // if(isGuessed || wrongAttempts) {
-        //     console.log('guessed or game over')
-        //     // store.dispatch(clearArray())
-        // }
-        store.dispatch(clearArray())
+    const isGuessed = curr === guessWord; // check if word is guessed 
+    
+    // check if word is guessed
+    // wrong attempt counter
+
+    const checkScore = (count) => {
+        let newScore = Math.round(((1000 / (count)) * 1.3) + 100);
+        if(count == -10) {
+            restartGame();
+        } else {
+            scoreCounter(newScore);
+        }
     }
 
-    const checkScore = () => {
-        // let newScore = Math.round(((1000 / (count / curr.length)) * 20) / 100);
-        // setCount(0);
+    const checkResult = () => {
+        unMatchedLettersLength = unMatchedLettersLength < 1 ? 1 : unMatchedLettersLength;
+        
+        if(unMatchedLettersLength > 4) {
+            delay(-10);
+        } else if (isGuessed) {
+            delay(unMatchedLettersLength);
+        }
     }
+
+    // GET_WORD getString
+    // CLEAR_ARRAY clearArray
+    // SCORE_COUNTER scoreCounter
+
+    const delay = (attempts) => {
+        setTimeout(() => {
+            randomWord();
+            checkScore(attempts);
+        }, 800);
+    }   
+
+    clearInterval(delay);
+
+    useMemo(checkResult, [unMatchedLettersLength, isGuessed]);
+   
+    const listItems = allHighScores.map((allHighScores, key) => 
+        <li key={key}>{allHighScores}</li>
+    );
 
     return (
         <div>
+            <p>{highScores}</p>
+            <p>Your Score: {newCurrentScore}</p>
+    
             <p>{guessWord}</p>
             <p>{revealMatchedWord(guessWord, updatedArray)}</p>
             <button onClick={randomWord}></button>
+
+            <div>High Scores below: 
+                <ol>{listItems}</ol>
+            </div>
         </div>
     )
 }
@@ -138,16 +171,18 @@ const mapDispatchToProps = dispatch => ({
     newArray: (currentArray) => dispatch(newArray(currentArray)),
     filteredArray: (getWord) => dispatch(filteredArray(getWord)),
     getString: (word) => dispatch(getString(word)), 
-    cleanArray: () => dispatch(cleanArray())
+    clearArray: () => dispatch(clearArray()),
+    scoreCounter: (getScore) => dispatch(scoreCounter(getScore)),
+    highScore: (getHighScore) => dispatch(highScore(getHighScore))
 });
 
 const mapStateToProps = state => {
-    console.log(state.game.filteredArray);
     return {
-        updatedArray: state.game.currentArray,
-        unMatchedLetters: state.game.filteredArray,
+        updatedArray: state.game.currentArray || [],
+        unMatchedLettersLength: state.game.filteredArray.length,
         guessWord: state.game.currentWord || [],
-        wrongAttempts: state.game.filteredArrayLength || 0
+        newCurrentScore: state.game.updatedCurrentScore || 0,
+        allHighScores: state.game.unsortedAllHighScores || []
     }
 };
 
