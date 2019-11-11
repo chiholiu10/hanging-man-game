@@ -6,6 +6,22 @@
   height: 40vmin;
 }
 
+.pop-up {
+  border: 1px solid red;
+  width: 200px;
+  height: 200px;
+  position: absolute;
+  display: block;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.close {
+  display: none;
+}
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
