@@ -20,9 +20,10 @@ const App = ({
     guessWord,  
     newCurrentScore
 }) => {
-
     const [ data, setData ] = useState([]);
     const [ highScores, setHighScores] = useState([]);
+    const prevCount = usePrevious(currentCounter);
+    const [ checkCounter, setCheckCounter ] = useState(false);
 
     useEffect(() => {
         const runEffect = async () => {
@@ -37,6 +38,23 @@ const App = ({
         // getString(data[currentCounter].word);
     }
 
+    function usePrevious(value) {
+        const ref = useRef();
+
+        useEffect(() => {
+            ref.current = value;
+        }, [value]);
+
+        return ref.current;
+    }
+
+    useEffect(() => {
+        if(prevCount == 5 && currentCounter == 1) {
+            setCheckCounter(true);
+        }
+    }, [prevCount, currentCounter]);
+
+
     const shuffle = (a) => {
         // create copy or new array     
 
@@ -44,11 +62,11 @@ const App = ({
         for (let i = a.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-            return;
         }
-        
         setData(newArr);
     }
+
+  
 
     const handleKeyPress = useCallback(event => {
         let letter = String.fromCharCode(event.keyCode).toLowerCase();
@@ -85,30 +103,40 @@ const App = ({
     const isGuessed = curr === guessWord; // check if word is guessed 
 
     const counterIndex = () => {
-        if(currentCounter > 4) {
+        console.log('currentCounter ' + currentCounter);
+
+        if(currentCounter == 5) {
             shuffle(data);
             resetCounter();
-        } 
-        checkMatch();
+        } else {
+            checkMatch();
+        }
     }
-
 
     const checkMatch = () => {
         wordCounter();
-
         // fallback to avoid console error
         if(data[currentCounter] == undefined) return;
         getString(data[currentCounter].word);
         clearArray();
+        // firstWordCheck();
     }
+
+    // const firstWordCheck = () => {
+    //     console.log(currentCounter)
+    // }
 
     let timeOut;
 
     const delay = (attempts) => {
        timeOut = setTimeout(() => {
-            counterIndex();
-            // checkScore(attempts);
+            // counterIndex();
+            checkScore(attempts);
         });
+    }
+
+    const checkScore = (currentAttempts) => {
+        scoreCounter(currentAttempts);
     }
 
     clearTimeout(timeOut);
@@ -116,22 +144,26 @@ const App = ({
     const checkWinner = (unmatched, guessed) => {
         if(guessed) {
             delay(unmatched);
+            highScore(newCurrentScore);
         } else {
-            delay(unmatched * -10); 
+            delay(unmatched); 
         }
     }
-    let currentUnmatchedLetters;
-    const checkLetters = () => {
 
-        console.log(unMatchedLettersLength, isGuessed);
-        if(unMatchedLettersLength > 4) {
-            currentUnmatchedLetters = unMatchedLettersLength < 1 ? 1 : unMatchedLettersLength;
-            checkWinner(currentUnmatchedLetters, isGuessed);
+    let currentUnmatchedLetters;
+
+    const checkLetters = () => {
+        if(unMatchedLettersLength > 5) {
+            // currentUnmatchedLetters = unMatchedLettersLength < 1 ? 0 : unMatchedLettersLength;
+     
+            checkWinner(100, isGuessed);
             highScore(newCurrentScore);
-            restartGame();
-        } else if (unMatchedLettersLength < 4 && isGuessed) {
-            checkWinner(currentUnmatchedLetters, isGuessed);
-            highScore(newCurrentScore);
+            // restartGame();
+            // lose game because you has more attempts than allows. 
+        } else if (unMatchedLettersLength < 4 && isGuessed && checkCounter) {
+            checkWinner(100, isGuessed);
+            setCheckCounter(false);
+            // guess all the words
         }
     }
 
@@ -181,9 +213,11 @@ const mapStateToProps = state => {
     }
 }
 
-// stop game when letter has hit 5 times wrong!
-// dont push highscore after guessed word
-// logic of highscore
+// stop game when letter has hit 5 times wrong! **
+// dont push highscore after guessed word **
+// not guessed and then push on start button 
+// restart game should start with index 0 
+// logic of highscore 
 // logic of currentscore
 
 // ux of start button...to force user to understand the software game.....

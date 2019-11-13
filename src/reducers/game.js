@@ -8,7 +8,8 @@ const initialState = {
     updatedCurrentScore: 0,
     sortedAllHighScores: [],
     unsortedAllHighScores: [],
-    counter: 0
+    counter: 0,
+    counterStep: 1
 };
 
 export const game = (state = initialState, action) => {
@@ -72,7 +73,7 @@ export const game = (state = initialState, action) => {
         case types.WORD_COUNTER: {
             return {
                 ...state,
-                counter: state.counter + 1
+                counter: state.counter + state.counterStep
             }
         }
 
