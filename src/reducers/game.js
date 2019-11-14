@@ -8,6 +8,7 @@ const initialState = {
     updatedCurrentScore: 0,
     sortedAllHighScores: [],
     unsortedAllHighScores: [],
+    shuffledArray: [],
     counter: 0,
     counterStep: 1
 };
@@ -28,6 +29,7 @@ export const game = (state = initialState, action) => {
                 currentWord: action.word
             }
         }
+
 
         case types.FILTERED_ARRAY: {
             const allLetters = state.currentArray;
@@ -70,6 +72,13 @@ export const game = (state = initialState, action) => {
             }
         }
 
+        case types.RESET_COUNTER: {
+            return {
+                ...state,
+                counter: 0
+            }
+        }
+
         case types.WORD_COUNTER: {
             return {
                 ...state,
@@ -77,12 +86,7 @@ export const game = (state = initialState, action) => {
             }
         }
 
-        case types.RESET_COUNTER: {
-            return {
-                ...state,
-                counter: 0
-            }
-        }
+
 
         default: 
             return state;

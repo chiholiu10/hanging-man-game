@@ -16,11 +16,13 @@ const App = ({
     resetCounter,
     currentCounter,
     updatedArray, 
+    newShuffledArray,
     unMatchedLettersLength, 
     guessWord,  
     newCurrentScore
 }) => {
     const [ data, setData ] = useState([]);
+    const [ counter, setCounter ] = useState(0);
     const [ highScores, setHighScores] = useState([]);
     const prevCount = usePrevious(currentCounter);
     const [ checkCounter, setCheckCounter ] = useState(false);
@@ -32,11 +34,6 @@ const App = ({
         }
         runEffect();
     }, []);
-
-    const restartGame = () => {
-        resetCounter();
-        // getString(data[currentCounter].word);
-    }
 
     function usePrevious(value) {
         const ref = useRef();
@@ -57,7 +54,7 @@ const App = ({
 
     const shuffle = (a) => {
         // create copy or new array     
-
+        
         let newArr = [...a];
         for (let i = a.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -65,8 +62,6 @@ const App = ({
         }
         setData(newArr);
     }
-
-  
 
     const handleKeyPress = useCallback(event => {
         let letter = String.fromCharCode(event.keyCode).toLowerCase();
@@ -103,28 +98,24 @@ const App = ({
     const isGuessed = curr === guessWord; // check if word is guessed 
 
     const counterIndex = () => {
-        console.log('currentCounter ' + currentCounter);
-
-        if(currentCounter == 5) {
+        if(currentCounter > 5) {
             shuffle(data);
             resetCounter();
         } else {
             checkMatch();
+            wordCounter();
         }
+
+        console.log(currentCounter);
     }
 
     const checkMatch = () => {
-        wordCounter();
         // fallback to avoid console error
         if(data[currentCounter] == undefined) return;
         getString(data[currentCounter].word);
-        clearArray();
-        // firstWordCheck();
+        console.log(data[currentCounter].word, currentCounter);
+        // clearArray();
     }
-
-    // const firstWordCheck = () => {
-    //     console.log(currentCounter)
-    // }
 
     let timeOut;
 
@@ -153,9 +144,8 @@ const App = ({
     let currentUnmatchedLetters;
 
     const checkLetters = () => {
-        if(unMatchedLettersLength > 5) {
-            // currentUnmatchedLetters = unMatchedLettersLength < 1 ? 0 : unMatchedLettersLength;
-     
+        if(unMatchedLettersLength > 4) {
+
             checkWinner(100, isGuessed);
             highScore(newCurrentScore);
             // restartGame();
@@ -209,7 +199,7 @@ const mapStateToProps = state => {
         guessWord: state.game.currentWord || [],
         newCurrentScore: state.game.updatedCurrentScore || 0,
         allHighScores: state.game.sortedAllHighScores || [],
-        currentCounter: state.game.counter 
+        currentCounter: state.game.counter
     }
 }
 
