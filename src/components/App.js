@@ -16,16 +16,16 @@ const App = ({
     resetCounter,
     currentCounter,
     updatedArray, 
-    newShuffledArray,
     unMatchedLettersLength, 
     guessWord,  
     newCurrentScore
 }) => {
     const [ data, setData ] = useState([]);
-    const [ counter, setCounter ] = useState(0);
     const [ highScores, setHighScores] = useState([]);
     const prevCount = usePrevious(currentCounter);
+    const [ firstClick, setFirstClick ] = useState(false);
     const [ checkCounter, setCheckCounter ] = useState(false);
+    const [ checkGuessed, setCheckGuessed ] = useState(false)
 
     useEffect(() => {
         const runEffect = async () => {
@@ -35,6 +35,18 @@ const App = ({
         runEffect();
     }, []);
 
+    const revealMatchedWord = (string, guessed) => {
+        if(string.length > 0) {
+            const regExpr = new RegExp(`[^${guessed.join("")}\\s]`, 'ig');
+            return string.replace(regExpr, '_');
+        } else {
+            return;
+        }
+    }
+
+    let curr = revealMatchedWord(guessWord, updatedArray);
+    let isGuessed = curr === guessWord; // check if word is guessed
+    
     function usePrevious(value) {
         const ref = useRef();
 
@@ -51,7 +63,6 @@ const App = ({
         }
     }, [prevCount, currentCounter]);
 
-
     const shuffle = (a) => {
         // create copy or new array     
         
@@ -65,10 +76,11 @@ const App = ({
 
     const handleKeyPress = useCallback(event => {
         let letter = String.fromCharCode(event.keyCode).toLowerCase();
-
         if(event.keyCode >= 65 && event.keyCode <= 90) {
             newArray(letter);
             filteredArray(guessWord);
+            checkLetters();
+            console.log('check immediately');
         } else if(event.keyCode == 13) {
             event.preventDefault();
             return;
@@ -85,18 +97,6 @@ const App = ({
         }
     }, [handleKeyPress]);
 
-    const revealMatchedWord = (string, guessed) => {
-        if(string.length > 0) {
-            const regExpr = new RegExp(`[^${guessed.join("")}\\s]`, 'ig');
-            return string.replace(regExpr, '_');    
-        } else {
-            return;
-        }
-    }
-    
-    let curr = revealMatchedWord(guessWord, updatedArray);
-    const isGuessed = curr === guessWord; // check if word is guessed 
-
     const counterIndex = () => {
         if(currentCounter > 4) {
             shuffle(data);
@@ -106,17 +106,26 @@ const App = ({
             wordCounter();
         }
         checkMatch();
+    }
 
-        console.log(currentCounter);
+    // const memoizedValue = useMemo(() => checkFirstClick());
+
+    const checkFirstClick = () => {
+        // should skip the first click when page is loaded.
+        // setFirstClick(true);
+        // if(firstClick) {
+        //     console.log('check');
+        //     checkLetters();
+        // } 
+        
     }
 
     const checkMatch = () => {
-
         // fallback to avoid console error
         if(data[currentCounter] == undefined) return;
         getString(data[currentCounter].word);
         console.log(data[currentCounter].word, currentCounter);
-        // clearArray();
+        clearArray();
     }
 
     let timeOut;
@@ -135,6 +144,7 @@ const App = ({
     clearTimeout(timeOut);
 
     const checkWinner = (unmatched, guessed) => {
+
         if(guessed) {
             delay(unmatched);
             highScore(newCurrentScore);
@@ -146,20 +156,23 @@ const App = ({
     let currentUnmatchedLetters;
 
     const checkLetters = () => {
+        console.log('unMatchedLettersLength ' + unMatchedLettersLength + ' isGuessed' + isGuessed);
+        console.log('isGuessed ' + isGuessed);
         if(unMatchedLettersLength > 4) {
             checkWinner(100, isGuessed);
             highScore(newCurrentScore);
+            console.log('lose exceeded 5 unmatchedletters');
             // restartGame();
             // lose game because you has more attempts than allows. 
-        } else if (unMatchedLettersLength < 4 && isGuessed && checkCounter) {
+        } else if (unMatchedLettersLength < 4 && isGuessed) {
             checkWinner(100, isGuessed);
             setCheckCounter(false);
-            // guess all the words
+            console.log('win');
+        } else if (unMatchedLettersLength < 5 && !isGuessed) {
+            console.log('lose');
         }
     }
 
-    useMemo(checkLetters, [unMatchedLettersLength, isGuessed]);
-   
     const highScoreList = allHighScores.map((allHighScores, key) => 
         <li key={key}>{allHighScores}</li>
     );
