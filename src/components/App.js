@@ -98,18 +98,20 @@ const App = ({
     const isGuessed = curr === guessWord; // check if word is guessed 
 
     const counterIndex = () => {
-        if(currentCounter > 5) {
+        if(currentCounter > 4) {
             shuffle(data);
             resetCounter();
         } else {
-            checkMatch();
+            // else index 0 will be skipped
             wordCounter();
         }
+        checkMatch();
 
         console.log(currentCounter);
     }
 
     const checkMatch = () => {
+
         // fallback to avoid console error
         if(data[currentCounter] == undefined) return;
         getString(data[currentCounter].word);
@@ -145,7 +147,6 @@ const App = ({
 
     const checkLetters = () => {
         if(unMatchedLettersLength > 4) {
-
             checkWinner(100, isGuessed);
             highScore(newCurrentScore);
             // restartGame();
@@ -206,7 +207,7 @@ const mapStateToProps = state => {
 // stop game when letter has hit 5 times wrong! **
 // dont push highscore after guessed word **
 // not guessed and then push on start button 
-// restart game should start with index 0 
+// restart game should start with index 0 **
 // logic of highscore 
 // logic of currentscore
 
