@@ -30,19 +30,15 @@ export const game = (state = initialState, action) => {
             }
         }
 
-
         case types.FILTERED_ARRAY: {
             const allLetters = state.currentArray;
             const randomWord = state.currentWord || [];
-
-            if(state.filteredArray.length < 5) {
-                return {
-                    ...state,
-                    filteredArray: Array.from(new Set(allLetters.filter(el => randomWord.indexOf(el) === -1)))
-                }
-            } else {
-                return state
+            
+            return {
+                ...state,
+                filteredArray: Array.from(new Set(allLetters.filter(el => randomWord.indexOf(el) === -1)))
             }
+                
         }
 
         case types.CLEAR_ARRAY: {
@@ -85,8 +81,6 @@ export const game = (state = initialState, action) => {
                 counter: state.counter + state.counterStep
             }
         }
-
-
 
         default: 
             return state;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
 import { newArray, filteredArray, clearArray, getString, scoreCounter, highScore, resetCurrentScore, wordCounter, resetCounter } from '../actions/index';
@@ -25,14 +25,14 @@ const App = ({
     const prevCount = usePrevious(currentCounter);
     const [ firstClick, setFirstClick ] = useState(false);
     const [ checkCounter, setCheckCounter ] = useState(false);
-    const [ checkGuessed, setCheckGuessed ] = useState(false)
 
     useEffect(() => {
-        const runEffect = async () => {
+        console.log('loading')
+        const fetchApi = async () => {
             const result = await axios('src/api/api.js');
             setData(result.data);
         }
-        runEffect();
+        fetchApi();
     }, []);
 
     const revealMatchedWord = (string, guessed) => {
@@ -46,7 +46,7 @@ const App = ({
 
     let curr = revealMatchedWord(guessWord, updatedArray);
     let isGuessed = curr === guessWord; // check if word is guessed
-    
+
     function usePrevious(value) {
         const ref = useRef();
 
@@ -76,55 +76,45 @@ const App = ({
 
     const handleKeyPress = useCallback(event => {
         let letter = String.fromCharCode(event.keyCode).toLowerCase();
-        if(event.keyCode >= 65 && event.keyCode <= 90) {
+        let alphabet = event.keyCode >= 65 && event.keyCode <= 90;
+        let unMatchedLetterMax = unMatchedLettersLength < 5;
+
+        if(alphabet && unMatchedLetterMax && !isGuessed) {
             newArray(letter);
             filteredArray(guessWord);
-            checkLetters();
-            console.log('check immediately');
         } else if(event.keyCode == 13) {
             event.preventDefault();
             return;
         } else {
+            console.log('next word');
+            restartGame();
             return;
         }
-    });
 
-    useEffect(() => {
-        document.addEventListener('keydown', handleKeyPress);
+    }, [unMatchedLettersLength, isGuessed]);
 
-        return () => {
-            document.removeEventListener('keydown', handleKeyPress);
-        }
-    }, [handleKeyPress]);
+    const checkFirstClick = () => {
+        setFirstClick(true);
+        if(firstClick) {
+            // checkLetters();
+        } 
+    }
 
     const counterIndex = () => {
         if(currentCounter > 4) {
-            shuffle(data);
-            resetCounter();
+            restartGame();
         } else {
             // else index 0 will be skipped
             wordCounter();
         }
+        checkFirstClick();
         checkMatch();
-    }
-
-    // const memoizedValue = useMemo(() => checkFirstClick());
-
-    const checkFirstClick = () => {
-        // should skip the first click when page is loaded.
-        // setFirstClick(true);
-        // if(firstClick) {
-        //     console.log('check');
-        //     checkLetters();
-        // } 
-        
     }
 
     const checkMatch = () => {
         // fallback to avoid console error
         if(data[currentCounter] == undefined) return;
         getString(data[currentCounter].word);
-        console.log(data[currentCounter].word, currentCounter);
         clearArray();
     }
 
@@ -143,35 +133,32 @@ const App = ({
 
     clearTimeout(timeOut);
 
-    const checkWinner = (unmatched, guessed) => {
+    const checkWinner = (unmatched) => {
+        delay(unmatched);
+    }
 
-        if(guessed) {
-            delay(unmatched);
-            highScore(newCurrentScore);
-        } else {
-            delay(unmatched); 
+    let checkLetters = () => {
+        console.log('unMatchedLettersLength ' + unMatchedLettersLength + 'inside isGuessed ' + isGuessed + ' checkCounter ' + checkCounter);
+        if(unMatchedLettersLength > 4 && !isGuessed) {
+            console.log('exceeded 5 attemps, no words guessed')
+        //     checkWinner(100);
+        //     highScore(newCurrentScore);
+        //     console.log('lose exceeded 5 unmatchedletters');
+        //     restartGame();
+        //     // lose game because you has more attempts than allows. 
+        } else if (unMatchedLettersLength < 4 && !isGuessed) {
+            console.log('lose')
         }
     }
 
-    let currentUnmatchedLetters;
-
-    const checkLetters = () => {
-        console.log('unMatchedLettersLength ' + unMatchedLettersLength + ' isGuessed' + isGuessed);
-        console.log('isGuessed ' + isGuessed);
-        if(unMatchedLettersLength > 4) {
-            checkWinner(100, isGuessed);
-            highScore(newCurrentScore);
-            console.log('lose exceeded 5 unmatchedletters');
-            // restartGame();
-            // lose game because you has more attempts than allows. 
-        } else if (unMatchedLettersLength < 4 && isGuessed) {
-            checkWinner(100, isGuessed);
-            setCheckCounter(false);
-            console.log('win');
-        } else if (unMatchedLettersLength < 5 && !isGuessed) {
-            console.log('lose');
-        }
+    const restartGame = () => {
+        shuffle(data);
+        resetCounter();
     }
+
+
+
+    useMemo(checkLetters, [isGuessed, unMatchedLettersLength]);
 
     const highScoreList = allHighScores.map((allHighScores, key) => 
         <li key={key}>{allHighScores}</li>
@@ -185,7 +172,7 @@ const App = ({
             <p>{guessWord}</p>
             <p>{revealMatchedWord(guessWord, updatedArray)}</p>
 
-            <button onClick={counterIndex}>Start</button>
+            <button id="button" onClick={counterIndex} onKeyDown={handleKeyPress}>Start</button>
 
             <div>High Scores below: 
                 <ol>{highScoreList}</ol>
@@ -219,7 +206,8 @@ const mapStateToProps = state => {
 
 // stop game when letter has hit 5 times wrong! **
 // dont push highscore after guessed word **
-// not guessed and then push on start button 
+// exceeded 5 attemps of word guessing **
+// restart when exceeded 5 attempts or when someone clicks even when there is nothing filled in
 // restart game should start with index 0 **
 // logic of highscore 
 // logic of currentscore
