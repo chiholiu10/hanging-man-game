@@ -10,7 +10,8 @@ const initialState = {
     unsortedAllHighScores: [],
     shuffledArray: [],
     counter: 0,
-    counterStep: 1
+    counterStep: 1,
+    guessWord: false
 };
 
 export const game = (state = initialState, action) => {

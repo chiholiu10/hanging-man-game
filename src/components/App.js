@@ -1,7 +1,17 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
-import { newArray, filteredArray, clearArray, getString, scoreCounter, highScore, resetCurrentScore, wordCounter, resetCounter } from '../actions/index';
+import { 
+    newArray, 
+    filteredArray, 
+    clearArray, 
+    getString, 
+    scoreCounter, 
+    highScore, 
+    resetCurrentScore, 
+    wordCounter, 
+    resetCounter
+} from '../actions/index';
 import '../App.css';
 
 const App = ({ 
@@ -9,7 +19,6 @@ const App = ({
     filteredArray,
     getString,
     clearArray,
-    highScore,
     allHighScores,
     wordCounter,
     scoreCounter,
@@ -25,6 +34,7 @@ const App = ({
     const prevCount = usePrevious(currentCounter);
     const [ firstClick, setFirstClick ] = useState(false);
     const [ checkCounter, setCheckCounter ] = useState(false);
+    const [ guessed, setGuessed ] = useState(false);
 
     useEffect(() => {
         console.log('loading')
@@ -46,6 +56,10 @@ const App = ({
 
     let curr = revealMatchedWord(guessWord, updatedArray);
     let isGuessed = curr === guessWord; // check if word is guessed
+
+    useEffect(() => {
+        setGuessed(isGuessed);
+    }, [isGuessed]);
 
     function usePrevious(value) {
         const ref = useRef();
@@ -74,29 +88,34 @@ const App = ({
         setData(newArr);
     }
 
+
+
     const handleKeyPress = useCallback(event => {
         let letter = String.fromCharCode(event.keyCode).toLowerCase();
         let alphabet = event.keyCode >= 65 && event.keyCode <= 90;
         let unMatchedLetterMax = unMatchedLettersLength < 5;
 
-        if(alphabet && unMatchedLetterMax && !isGuessed) {
+        console.log('guessed ' + guessed);
+
+        if(alphabet && unMatchedLetterMax && !guessed) {
             newArray(letter);
             filteredArray(guessWord);
+
         } else if(event.keyCode == 13) {
             event.preventDefault();
             return;
         } else {
-            console.log('next word');
-            restartGame();
+            console.log('cannot type letters anymore!!');
+            checkLetters();
             return;
         }
 
-    }, [unMatchedLettersLength, isGuessed]);
+    }, [guessed, unMatchedLettersLength]);
 
     const checkFirstClick = () => {
         setFirstClick(true);
         if(firstClick) {
-            // checkLetters();
+            checkLetters();
         } 
     }
 
@@ -122,7 +141,6 @@ const App = ({
 
     const delay = (attempts) => {
        timeOut = setTimeout(() => {
-            // counterIndex();
             checkScore(attempts);
         });
     }
@@ -137,17 +155,20 @@ const App = ({
         delay(unmatched);
     }
 
+
     let checkLetters = () => {
-        console.log('unMatchedLettersLength ' + unMatchedLettersLength + 'inside isGuessed ' + isGuessed + ' checkCounter ' + checkCounter);
+        console.log('unMatchedLettersLength ' + unMatchedLettersLength + 'inside isGuessed ' + guessed + ' checkCounter ' + checkCounter);
         if(unMatchedLettersLength > 4 && !isGuessed) {
             console.log('exceeded 5 attemps, no words guessed')
-        //     checkWinner(100);
-        //     highScore(newCurrentScore);
-        //     console.log('lose exceeded 5 unmatchedletters');
-        //     restartGame();
-        //     // lose game because you has more attempts than allows. 
+        // //     checkWinner(100);
+        // //     highScore(newCurrentScore);
+        // //     console.log('lose exceeded 5 unmatchedletters');
+        // //     restartGame();
+        // //     // lose game because you has more attempts than allows. 
+        } else if (unMatchedLettersLength < 4 && isGuessed) {
+            console.log('win next');
         } else if (unMatchedLettersLength < 4 && !isGuessed) {
-            console.log('lose')
+            console.log('lose');
         }
     }
 
@@ -156,9 +177,7 @@ const App = ({
         resetCounter();
     }
 
-
-
-    useMemo(checkLetters, [isGuessed, unMatchedLettersLength]);
+    // useMemo(checkLetters, [isGuessed, unMatchedLettersLength]);
 
     const highScoreList = allHighScores.map((allHighScores, key) => 
         <li key={key}>{allHighScores}</li>

@@ -8,7 +8,8 @@ export const types = {
     CLEAN_FILTERED_ARRAY: 'CLEAN_FILTERED_ARRAY',
     RESET_SCORE: 'RESET_SCORE',
     WORD_COUNTER: 'WORD_COUNTER',
-    RESET_COUNTER: 'RESET_COUNTER'
+    RESET_COUNTER: 'RESET_COUNTER',
+    GUESS_WORD: 'GUESS_WORD'
 }
 
 export const newArray = unfilteredArray => ({
