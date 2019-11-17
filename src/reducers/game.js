@@ -47,7 +47,7 @@ export const game = (state = initialState, action) => {
                 ...state,
                 currentArray: [],
                 filteredArray: [],
-                updatedCurrentScore: Math.floor(state.updatedCurrentScore / 5)
+                // updatedCurrentScore: Math.floor(state.updatedCurrentScore / 5)
             }
         }
 
@@ -60,8 +60,9 @@ export const game = (state = initialState, action) => {
 
         case types.HIGH_SCORE: {
             const unsortedHighScores = [...state.unsortedAllHighScores, state.updatedCurrentScore];
+            console.log(unsortedHighScores);
             const sortedHighScores = [].concat(unsortedHighScores).sort((a, b) => { return b - a });
-
+            console.log('hello')
             return {
                 ...state,
                 unsortedAllHighScores: unsortedHighScores,
@@ -72,7 +73,8 @@ export const game = (state = initialState, action) => {
         case types.RESET_COUNTER: {
             return {
                 ...state,
-                counter: 0
+                counter: 0,
+                updatedCurrentScore: 0
             }
         }
 

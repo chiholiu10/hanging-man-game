@@ -23,6 +23,7 @@ const App = ({
     wordCounter,
     scoreCounter,
     resetCounter,
+    highScore,
     currentCounter,
     updatedArray, 
     unMatchedLettersLength, 
@@ -34,7 +35,7 @@ const App = ({
     const prevCount = usePrevious(currentCounter);
     const [ firstClick, setFirstClick ] = useState(false);
     const [ checkCounter, setCheckCounter ] = useState(false);
-    const [ guessed, setGuessed ] = useState(false);
+    const [ guessTheWord, setguessTheWord ] = useState(false);
 
     useEffect(() => {
         console.log('loading')
@@ -58,7 +59,7 @@ const App = ({
     let isGuessed = curr === guessWord; // check if word is guessed
 
     useEffect(() => {
-        setGuessed(isGuessed);
+        setguessTheWord(isGuessed);
     }, [isGuessed]);
 
     function usePrevious(value) {
@@ -72,7 +73,7 @@ const App = ({
     }
 
     useEffect(() => {
-        if(prevCount == 5 && currentCounter == 1) {
+        if(prevCount == 5 && currentCounter == 0) {
             setCheckCounter(true);
         }
     }, [prevCount, currentCounter]);
@@ -85,32 +86,29 @@ const App = ({
             const j = Math.floor(Math.random() * (i + 1));
             [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
         }
+
         setData(newArr);
     }
 
-
-
     const handleKeyPress = useCallback(event => {
         let letter = String.fromCharCode(event.keyCode).toLowerCase();
-        let alphabet = event.keyCode >= 65 && event.keyCode <= 90;
-        let unMatchedLetterMax = unMatchedLettersLength < 5;
+        let alphabet = event.keyCode >= 65 && event.keyCode <= 90;	        
+        let unMatchedLetterMax = unMatchedLettersLength < 5;	    
 
-        console.log('guessed ' + guessed);
 
-        if(alphabet && unMatchedLetterMax && !guessed) {
-            newArray(letter);
-            filteredArray(guessWord);
-
-        } else if(event.keyCode == 13) {
-            event.preventDefault();
-            return;
-        } else {
-            console.log('cannot type letters anymore!!');
+        if(alphabet && unMatchedLetterMax && !guessTheWord) {
+            newArray(letter);	           
+            filteredArray(guessWord);	    
+        } else if(event.keyCode == 13) {	        
+            event.preventDefault();	         
+            return;	          
+        } else {	                
+            restartGame();	            
             checkLetters();
-            return;
+            return;	     
         }
 
-    }, [guessed, unMatchedLettersLength]);
+    }, [guessTheWord, unMatchedLettersLength]);
 
     const checkFirstClick = () => {
         setFirstClick(true);
@@ -134,41 +132,57 @@ const App = ({
         // fallback to avoid console error
         if(data[currentCounter] == undefined) return;
         getString(data[currentCounter].word);
+
         clearArray();
-    }
-
-    let timeOut;
-
-    const delay = (attempts) => {
-       timeOut = setTimeout(() => {
-            checkScore(attempts);
-        });
     }
 
     const checkScore = (currentAttempts) => {
         scoreCounter(currentAttempts);
     }
 
-    clearTimeout(timeOut);
+    let timeOut;
 
-    const checkWinner = (unmatched) => {
-        delay(unmatched);
+    const delay = (attempts) => {
+        timeOut = setTimeout(() => {
+            checkScore(attempts);
+        });
     }
 
+    clearTimeout(timeOut);
+
+    const storeScore = (unmatched) => {
+        delay(unmatched);
+        console.log('unmatched ' + unmatched);
+    }
+
+    const highScoreSave = (getCurrentScore) => {
+        highScore(getCurrentScore);
+        restartGame();
+    }
 
     let checkLetters = () => {
-        console.log('unMatchedLettersLength ' + unMatchedLettersLength + 'inside isGuessed ' + guessed + ' checkCounter ' + checkCounter);
-        if(unMatchedLettersLength > 4 && !isGuessed) {
-            console.log('exceeded 5 attemps, no words guessed')
-        // //     checkWinner(100);
-        // //     highScore(newCurrentScore);
-        // //     console.log('lose exceeded 5 unmatchedletters');
-        // //     restartGame();
-        // //     // lose game because you has more attempts than allows. 
-        } else if (unMatchedLettersLength < 4 && isGuessed) {
+        let maxLetterAttempt = unMatchedLettersLength < 4;
+        console.log('unMatchedLettersLength ' + unMatchedLettersLength + 'inside isGuessed ' + guessTheWord + ' checkCounter ' + checkCounter);
+        let currentScore;
+
+        if(maxLetterAttempt && guessTheWord) {
+            storeScore(300);
+
+        } else if (maxLetterAttempt && !guessTheWord) {
+            console.log('game over');
+            highScoreSave();
+        } else if (maxLetterAttempt && guessTheWord) {
             console.log('win next');
-        } else if (unMatchedLettersLength < 4 && !isGuessed) {
-            console.log('lose');
+            if(checkCounter) {
+                console.log('highscore stored');
+                highScoreSave();
+
+            }
+        } else if (!maxLetterAttempt && !guessTheWord) {
+            console.log('exceeded 5 letters');
+            highScoreSave();
+        } else {
+            return
         }
     }
 
@@ -176,8 +190,6 @@ const App = ({
         shuffle(data);
         resetCounter();
     }
-
-    // useMemo(checkLetters, [isGuessed, unMatchedLettersLength]);
 
     const highScoreList = allHighScores.map((allHighScores, key) => 
         <li key={key}>{allHighScores}</li>
@@ -213,6 +225,7 @@ const mapDispatchToProps = dispatch => ({
 });
 
 const mapStateToProps = state => {
+    console.log(state.game.updatedCurrentScore, state.game.unsortedHighScores)
     return {
         updatedArray: state.game.currentArray || [],
         unMatchedLettersLength: state.game.filteredArray.length,

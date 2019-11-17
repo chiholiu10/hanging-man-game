@@ -36,9 +36,8 @@ export const scoreCounter = getScore => ({
     getScore
 });
 
-export const highScore = getHighScore => ({
-    type: types.HIGH_SCORE,
-    getHighScore
+export const highScore = () => ({
+    type: types.HIGH_SCORE
 });
 
 export const resetCurrentScore = () => ({
