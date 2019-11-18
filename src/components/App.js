@@ -102,8 +102,7 @@ const App = ({
         } else if(event.keyCode == 13) {	        
             event.preventDefault();	         
             return;	          
-        } else {	                
-            restartGame();	            
+        } else {	                            
             checkLetters();
             return;	     
         }
@@ -119,7 +118,7 @@ const App = ({
 
     const counterIndex = () => {
         if(currentCounter > 4) {
-            restartGame();
+            resetCounter();
         } else {
             // else index 0 will be skipped
             wordCounter();
@@ -136,29 +135,25 @@ const App = ({
         clearArray();
     }
 
-    const checkScore = (currentAttempts) => {
-        scoreCounter(currentAttempts);
-    }
+    // const checkScore = (currentAttempts) => {
+    //     scoreCounter(currentAttempts);
+    // }
 
-    let timeOut;
+    // let timeOut;
 
-    const delay = (attempts) => {
-        timeOut = setTimeout(() => {
-            checkScore(attempts);
-        });
-    }
+    // const delay = (attempts) => {
+    //     timeOut = setTimeout(() => {
+    //         checkScore(attempts);
+    //     });
+    // }
 
-    clearTimeout(timeOut);
+    // clearTimeout(timeOut);
 
-    const storeScore = (unmatched) => {
-        delay(unmatched);
-        console.log('unmatched ' + unmatched);
-    }
+    // const storeScore = (unmatched) => {
+    //     delay(unmatched);
+    //     console.log('unmatched ' + unmatched);
+    // }
 
-    const highScoreSave = (getCurrentScore) => {
-        highScore(getCurrentScore);
-        restartGame();
-    }
 
     let checkLetters = () => {
         let maxLetterAttempt = unMatchedLettersLength < 4;
@@ -170,6 +165,7 @@ const App = ({
             console.log('win next');
             if(checkCounter) {
                 highScore();
+                setCheckCounter(false);
             }
         } else if (maxLetterAttempt && !guessTheWord) {
             console.log('game over');

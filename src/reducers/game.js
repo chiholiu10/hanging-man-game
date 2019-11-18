@@ -66,15 +66,16 @@ export const game = (state = initialState, action) => {
             return {
                 ...state,
                 unsortedAllHighScores: unsortedHighScores,
-                sortedAllHighScores: sortedHighScores
+                sortedAllHighScores: sortedHighScores,
+                counter: 0,
+                updatedCurrentScore: 0
             }
         }
 
         case types.RESET_COUNTER: {
             return {
                 ...state,
-                counter: 0,
-                updatedCurrentScore: 0
+                counter: 0
             }
         }
 
