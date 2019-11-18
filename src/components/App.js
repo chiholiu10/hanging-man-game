@@ -166,18 +166,14 @@ const App = ({
         let currentScore;
 
         if(maxLetterAttempt && guessTheWord) {
-            storeScore(300);
-
-        } else if (maxLetterAttempt && !guessTheWord) {
-            console.log('game over');
-            highScoreSave();
-        } else if (maxLetterAttempt && guessTheWord) {
+            scoreCounter(300);
             console.log('win next');
             if(checkCounter) {
-                console.log('highscore stored');
-                highScoreSave();
-
+                highScore();
             }
+        } else if (maxLetterAttempt && !guessTheWord) {
+            console.log('game over');
+            highScore();
         } else if (!maxLetterAttempt && !guessTheWord) {
             console.log('exceeded 5 letters');
             highScoreSave();
