@@ -38,8 +38,7 @@ export const game = (state = initialState, action) => {
             return {
                 ...state,
                 filteredArray: Array.from(new Set(allLetters.filter(el => randomWord.indexOf(el) === -1)))
-            }
-                
+            }  
         }
 
         case types.CLEAR_ARRAY: {
@@ -60,14 +59,12 @@ export const game = (state = initialState, action) => {
 
         case types.HIGH_SCORE: {
             const unsortedHighScores = [...state.unsortedAllHighScores, state.updatedCurrentScore];
-            console.log(unsortedHighScores);
             const sortedHighScores = [].concat(unsortedHighScores).sort((a, b) => { return b - a });
-            console.log('hello')
+                
             return {
                 ...state,
                 unsortedAllHighScores: unsortedHighScores,
                 sortedAllHighScores: sortedHighScores,
-                counter: 0,
                 updatedCurrentScore: 0
             }
         }
@@ -75,7 +72,9 @@ export const game = (state = initialState, action) => {
         case types.RESET_COUNTER: {
             return {
                 ...state,
-                counter: 0
+                counter: 0,
+                currentArray: [],
+                filteredArray: [],
             }
         }
 

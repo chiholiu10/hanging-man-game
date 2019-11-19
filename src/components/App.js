@@ -31,14 +31,12 @@ const App = ({
     newCurrentScore
 }) => {
     const [ data, setData ] = useState([]);
-    const [ highScores, setHighScores] = useState([]);
     const prevCount = usePrevious(currentCounter);
     const [ firstClick, setFirstClick ] = useState(false);
     const [ checkCounter, setCheckCounter ] = useState(false);
     const [ guessTheWord, setguessTheWord ] = useState(false);
 
     useEffect(() => {
-        console.log('loading')
         const fetchApi = async () => {
             const result = await axios('src/api/api.js');
             setData(result.data);
@@ -82,20 +80,20 @@ const App = ({
         // create copy or new array     
         
         let newArr = [...a];
+       
         for (let i = a.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
         }
-
         setData(newArr);
+        console.log('data ' + data);
     }
 
     const handleKeyPress = useCallback(event => {
         let letter = String.fromCharCode(event.keyCode).toLowerCase();
         let alphabet = event.keyCode >= 65 && event.keyCode <= 90;	        
         let unMatchedLetterMax = unMatchedLettersLength < 5;	    
-
-
+        console.log(unMatchedLettersLength);
         if(alphabet && unMatchedLetterMax && !guessTheWord) {
             newArray(letter);	           
             filteredArray(guessWord);	    
@@ -116,9 +114,16 @@ const App = ({
         } 
     }
 
+    const callShuffle = () => {
+        // shuffle(data);
+    }
+
     const counterIndex = () => {
+        console.log('currentCounter ' + currentCounter);
         if(currentCounter > 4) {
-            resetCounter();
+            console.log('they are shuffling');
+            resetCounter();            
+            console.log('reset counter');
         } else {
             // else index 0 will be skipped
             wordCounter();
@@ -131,7 +136,6 @@ const App = ({
         // fallback to avoid console error
         if(data[currentCounter] == undefined) return;
         getString(data[currentCounter].word);
-
         clearArray();
     }
 
@@ -155,32 +159,32 @@ const App = ({
     // }
 
 
+    const storeHighScore = () => {
+        highScore();
+    }
+
     let checkLetters = () => {
         let maxLetterAttempt = unMatchedLettersLength < 4;
         console.log('unMatchedLettersLength ' + unMatchedLettersLength + 'inside isGuessed ' + guessTheWord + ' checkCounter ' + checkCounter);
-        let currentScore;
-
+        
         if(maxLetterAttempt && guessTheWord) {
             scoreCounter(300);
             console.log('win next');
             if(checkCounter) {
-                highScore();
+                storeHighScore();
                 setCheckCounter(false);
             }
         } else if (maxLetterAttempt && !guessTheWord) {
             console.log('game over');
-            highScore();
+            storeHighScore();
+            // resetCounter();
         } else if (!maxLetterAttempt && !guessTheWord) {
             console.log('exceeded 5 letters');
-            highScoreSave();
+            storeHighScore();
+            resetCounter();
         } else {
             return
         }
-    }
-
-    const restartGame = () => {
-        shuffle(data);
-        resetCounter();
     }
 
     const highScoreList = allHighScores.map((allHighScores, key) => 
@@ -189,7 +193,6 @@ const App = ({
 
     return (
         <div>
-            <p>{highScores}</p>
             <p>Your Score: {newCurrentScore}</p>
     
             <p>{guessWord}</p>
@@ -217,7 +220,6 @@ const mapDispatchToProps = dispatch => ({
 });
 
 const mapStateToProps = state => {
-    console.log(state.game.updatedCurrentScore, state.game.unsortedHighScores)
     return {
         updatedArray: state.game.currentArray || [],
         unMatchedLettersLength: state.game.filteredArray.length,
